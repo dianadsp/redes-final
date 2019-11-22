@@ -3,6 +3,8 @@
 #include <iostream>
 #include <map>
 
+#include "utility_connection.cpp"
+
 using namespace std;
 
 class JSON{
@@ -12,16 +14,43 @@ class JSON{
         JSON(){
 
         }
+        /**
+         * add fields in JSON format of data
+         * **/
         void add_fields(string name, string value){
             this->fields[name] = value;
             return ;
         }
+        /**
+         * serialize JSON data to normalized string
+         * **/
         string serialize(){
             string rps = "{\n";
-            for(){}
+            map<string, string>::iterator it = this->fields.begin();
+            for(; it != fields.end(); it++){
+                rps += it->first + " : " + it->second + ",\n";
+            }
+            rps += "}";
             return rps;
         }
-        void deserialize(string){
-
+        /**
+         * deserialize normalized string to JSON data
+         * **/
+        void deserialize(string data){
+            this->fields.clear();
+            vector<string> rps = split_string(data, "\n");
+            for(int i = 1; i < rps.size() - 1 ; i++ ){
+                vector<string> data_fields = split_string(rps[i], " : ");
+                this->fields[data_fields[0]] = data_fields[1];
+            }
+            return ;
+        }
+        /**
+         * display JSON to console
+         * **/
+        void display_console(){
+            string rps = this->serialize();
+            cout << rps << endl;
+            return ;
         }
 };
