@@ -1,85 +1,78 @@
  
 //g++ -o client client.cpp
  
-  #include <sys/types.h>
-  #include <sys/socket.h>
-  #include <netinet/in.h>
-  #include <arpa/inet.h>
-  #include <stdio.h>
-  #include <stdlib.h>
-  #include <string.h>
-  #include <unistd.h>
-  #include <iostream>
-  #include <string> 
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <iostream>
+#include <thread>
+#include <vector>
+#include "utility_connection.cpp"
 
-  using namespace std;
+#define MAX_SIZE_BUFFER 10000
 
-  int chat(int SocketFD)
-{
-    char buffer[256];
-    char buffer2[256];
-    int n;
-    do
-    { 
-        bzero(buffer,256);
-        bzero(buffer2,256);
-        cout << "Yo: ";
-        cin.getline (buffer,256);
+using namespace std;
+///////////////////////////// global variables
+class Client;
+Client* instance;
 
-        n = write(SocketFD,buffer,256);
-        
+///////////////////////////// client class
 
-        n = read(SocketFD,buffer2,256);
-        printf("El: [%s]\n",buffer2);
-    }while (strncmp("END",buffer,3)!=0);
+class Client {
+    private:
+        int connect_fd;
+        string buffer;
+        bool is_connected = true;
+    public:
+        ////// constructor
+        Client(int fd):connect_fd(fd){
+            instance = this;
+        }
+};
 
-    shutdown(SocketFD, SHUT_RDWR);
- 
-    close(SocketFD);
+////////////////////////// start clients
+void client_start(){
+        try{
+            struct sockaddr_in sock_addr;
+            int sock_fd, port;
+            string id;
+            /// create socket
+            sock_fd = sct__socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+            //// get data to connect socket
+            cout << "se creara una connection\nPase el ID del servidor:\n";
+            cin >> id;
+            cout << "Ahora el puerto:\n";
+            cin >> port;
+            //// convert variable
+            memset(&sock_addr, 0, sizeof(struct sockaddr_in));
+            sock_addr.sin_family = AF_INET;
+            sock_addr.sin_port = htons(port);
+            sct__inet_pton(AF_INET, id.c_str(), &sock_addr.sin_addr);
+            //// create socket in server
+            sct__connect(sock_fd, (struct sockaddr *)&sock_addr, sizeof(struct sockaddr_in));
+            cout << "se creo la connection in server" << endl;
+            ///// set up game
+            instance = new Client(sock_fd);
+
+            //// close connection
+            shutdown(sock_fd, SHUT_RDWR);
+            close(sock_fd);
+    }catch(string error_msg){
+            perror(error_msg.c_str());
+            exit(EXIT_FAILURE);
+    }
 }
- 
-  int main(void)
-  {
-    struct sockaddr_in stSockAddr;
-    int Res;
-    int SocketFD = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
- 
-    if (-1 == SocketFD)
-    {
-      perror("cannot create socket");
-      exit(EXIT_FAILURE);
-      return 0;
-    }
- 
-    memset(&stSockAddr, 0, sizeof(struct sockaddr_in));
- 
-    stSockAddr.sin_family = AF_INET;
-    stSockAddr.sin_port = htons(1100);
-    Res = inet_pton(AF_INET, "192.168.8.101", &stSockAddr.sin_addr);
- 
-    if (0 > Res)
-    {
-      perror("error: first parameter is not a valid address family");
-      close(SocketFD);
-      exit(EXIT_FAILURE);
-      return 0;
-    }
-    else if (0 == Res)
-    {
-      perror("char string (second parameter does not contain valid ipaddress");
-      close(SocketFD);
-      exit(EXIT_FAILURE);
-      return 0;
-    }
- 
-    if (-1 == connect(SocketFD, (const struct sockaddr *)&stSockAddr, sizeof(struct sockaddr_in)))  //conectarme con el servidor
-    {
-      perror("connect failed");
-      close(SocketFD);
-      exit(EXIT_FAILURE);
-      return 0;
-    }
 
-    chat(SocketFD); //cierra el recurso 
-    return 0;
-  }
+/////////////////////// main function
+int main(int argc, const char** argv){	
+    client_start();
+	return 0;
+}
+
+   
