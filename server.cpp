@@ -42,6 +42,7 @@ class Connection;
 
 /////////// global variables of file
 vector<Connection *> slaves;
+vector<int> fd_slaves;
 bool is_connected = true;
 set<string> unique_nicknames;
 
@@ -59,8 +60,16 @@ class Connection{
         Protocol* protocolo;
     public:
         Connection(int fd): connection_fd(fd){
-            this->protocolo = new Protocol(fd, false);
             slaves.push_back(this);
+            fd_slaves.push_back(fd);
+        }
+        void receive_msg_from_user(){
+            do{
+                string msg_user = "";
+                getline(cin, msg_user);
+                cout << "yo escribi:" << msg_user << endl;
+            }while(this->is_actived);
+            return ;
         }
 
 };
@@ -90,6 +99,8 @@ int start_server(int port, string ip){
 			connect_fd = sct__accept(socket_fd, NULL, NULL);
 			cout << "conectamos un nuevo cliente: " << connect_fd << endl;
 			Connection* c = new Connection(connect_fd);
+            thread th(&Connection::receive_msg_from_user, c);
+            th.detach();
 		}
 		close(socket_fd);
     }catch(string msg_error){

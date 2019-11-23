@@ -47,7 +47,7 @@ class Client {
     public:
         ////// constructor
         Client(int fd):connect_fd(fd){
-            this->protocolo = new Protocol(fd, true);
+            this->protocolo = new Protocol(fd, true, 0);
             instance = this;
         }
 };

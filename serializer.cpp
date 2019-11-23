@@ -53,4 +53,16 @@ class JSON{
             cout << rps << endl;
             return ;
         }
+        /**
+         * get value of field
+         * **/
+        string get_field(string field){
+            return this->fields[field];
+        }
+        /**
+         * set value of field
+         * **/
+        string set_field(string field, string value){
+            return this->fields[field] = value;
+        }
 };
