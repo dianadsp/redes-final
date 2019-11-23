@@ -32,6 +32,7 @@
 
 #include "protocol.cpp"
 #include "utility_connection.h"
+#include "analizador.h"
 
 #define MAX_SIZE_BUFFER 10000
 
@@ -45,8 +46,34 @@ vector<Connection *> slaves;
 vector<int> fd_slaves;
 bool is_connected = true;
 set<string> unique_nicknames;
+AnalizadorCommands operator_command;
+Protocol* protocol_server = new Protocol(0, false, &fd_slaves);
 
 ////////////// definition of classes and methods
+
+/**
+ * terminal to analyze and interprete the commands from user
+ * **/
+void terminal_user(){
+            while(is_connected){
+                string msg_user = "";
+                cout << ">> ingresa el comando:" << endl;
+                getline(cin, msg_user);
+                if(msg_user == "bye-bye"){
+                    cout << "Adios" << endl;
+                    is_connected = false;
+                    return ;
+                }
+                string operation = operator_command.Analize(msg_user);
+                if(operation == "ERROR"){
+                    cout << "ERROR: Operacion rechazada." << endl;
+                }else{
+                   cout << protocol_server->take_action(operation) << endl;
+                }
+            };
+            return ;    
+}
+
 /***
  * Connection class
  *  Purpose:
@@ -65,11 +92,10 @@ class Connection{
         }
         void receive_msg_from_user(){
             do{
-                string msg_user = "";
-                getline(cin, msg_user);
-                cout << "yo escribi:" << msg_user << endl;
+                string buffer(MAX_SIZE_BUFFER, '\0');
+                sct__read(this->connection_fd, (char *)buffer.c_str(), MAX_SIZE_BUFFER);
+                this->protocolo->take_action();
             }while(this->is_actived);
-            return ;
         }
 
 };
@@ -94,13 +120,15 @@ int start_server(int port, string ip){
 		sct__bind(socket_fd, (struct sockaddr*)&sock_addr, sizeof(struct sockaddr_in));
 		sct__listen(socket_fd, 10);
 		cout << "Abrimos el servidor!" << endl;
+        thread th_user(terminal_user);
 		while(is_connected){
 			int connect_fd;
 			connect_fd = sct__accept(socket_fd, NULL, NULL);
-			cout << "conectamos un nuevo cliente: " << connect_fd << endl;
+			cout << " ----> conectamos un nuevo cliente: " << connect_fd << endl;
 			Connection* c = new Connection(connect_fd);
             thread th(&Connection::receive_msg_from_user, c);
             th.detach();
+            cout << ">> ingresa el comando:" << endl;
 		}
 		close(socket_fd);
     }catch(string msg_error){

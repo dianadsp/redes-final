@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 
-#include "serializer.cpp"
+#include "serializer.h"
 #include "utility_connection.h"
 
 using namespace std;
@@ -27,18 +27,26 @@ class Protocol{
         string take_action(string msg){
             this->format.deserialize(msg);
             if(this->slave){
-                return this->slave_action(msg);
+                return this->slave_action();
             }
-            return this->master_action(msg);
+            return this->master_action();
         }
         /**
          * interface: action to take in master protocol
          ***/
-        string master_action(string msg){
+        string master_action(){
             string rps;
             string code = this->format.get_field("code");
-            if(code == "print_all"){
-                rps = this->print_all_master();
+            ///// operation - send msg to all client ( iterate 1)
+            if(code == "send_all"){
+                if(this->format.get_field("iterate") == "-1"){
+                    this->format.set_field("iterate", "0");
+                    rps = this->send_all_master();
+                }
+                else if(this->format.get_field("iterate") == "1"){
+                    cout << "se recibio una respuesta aprobada" << endl;
+                    rps = "ok";
+                }
             }else{
                 rps = "Error en la respuesta";  
             }
@@ -47,11 +55,14 @@ class Protocol{
         /**
          * interface: action to take in slave protocol
          * **/
-        string slave_action(string msg){
+        string slave_action(){
             string rps;
             string code = this->format.get_field("code");
-            if(code == "print_all"){
+            if(code == "send_all"){
+                this->format.set_field("iterate", "1");
                 cout << this->format.get_field("msg") << endl;
+                string send_msg = this->format.serialize();
+                sct__write(this->socket_fd, send_msg.c_str(), send_msg.size());
                 rps = "Exito en la operacion";
             }else{
                 rps = "Error en la respuesta";  
@@ -59,12 +70,12 @@ class Protocol{
             return rps;
         }
         //////////////// utility functions
-        string print_all_master(){
+        string send_all_master(){
                 string msg = this->format.serialize();
                 int size_neighbors = this->ptr_neighbors->size();
                 for(int idx = 0 ; idx != size_neighbors; idx++ ){
                     sct__write((*(this->ptr_neighbors))[idx] , msg.c_str(), msg.size() );
                 }
-                return "Exito en la operacion";
+                return "Exito en la operacion parte (1) send_all";
         }
 };

@@ -50,6 +50,13 @@ class Client {
             this->protocolo = new Protocol(fd, true, 0);
             instance = this;
         }
+        void receive_msg_from_server(){
+            do{
+                string buffer(MAX_SIZE_BUFFER, '\0');
+                int n = sct__read(this->connect_fd, (char *)buffer.c_str() ,buffer.size());
+                this->protocolo->take_action(buffer);
+            }while(this->is_connected);
+        }
 };
 
 ////////////////////////// start clients
@@ -76,7 +83,8 @@ void client_start(){
             cout << "se creo la connection in server" << endl;
             ///// set up game
             instance = new Client(sock_fd);
-
+            thread t_receive(&Client::receive_msg_from_server, instance);
+            t_receive.join();
             //// close connection
             shutdown(sock_fd, SHUT_RDWR);
             close(sock_fd);
