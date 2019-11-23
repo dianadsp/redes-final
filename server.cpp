@@ -89,12 +89,13 @@ class Connection{
         Connection(int fd): connection_fd(fd){
             slaves.push_back(this);
             fd_slaves.push_back(fd);
+            this->protocolo = new Protocol(fd, true, 0);
         }
         void receive_msg_from_user(){
             do{
                 string buffer(MAX_SIZE_BUFFER, '\0');
                 sct__read(this->connection_fd, (char *)buffer.c_str(), MAX_SIZE_BUFFER);
-                this->protocolo->take_action();
+                this->protocolo->take_action(buffer);
             }while(this->is_actived);
         }
 

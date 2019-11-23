@@ -43,10 +43,6 @@ class Protocol{
                     this->format.set_field("iterate", "0");
                     rps = this->send_all_master();
                 }
-                else if(this->format.get_field("iterate") == "1"){
-                    cout << "se recibio una respuesta aprobada" << endl;
-                    rps = "ok";
-                }
             }else{
                 rps = "Error en la respuesta";  
             }
@@ -59,11 +55,17 @@ class Protocol{
             string rps;
             string code = this->format.get_field("code");
             if(code == "send_all"){
-                this->format.set_field("iterate", "1");
-                cout << this->format.get_field("msg") << endl;
-                string send_msg = this->format.serialize();
-                sct__write(this->socket_fd, send_msg.c_str(), send_msg.size());
-                rps = "Exito en la operacion";
+                if(this->format.get_field("iterate") == "0"){
+                    this->format.set_field("iterate", "1");
+                    cout << "todos recibimos este msg: "<< this->format.get_field("msg") << endl;
+                    string send_msg = this->format.serialize();
+                    sct__write(this->socket_fd, send_msg.c_str(), send_msg.size());
+                    rps = "Exito en la operacion";
+                }
+                else if(this->format.get_field("iterate") == "1"){
+                    ///cout << "finalizo la operacion send_all (2)" << endl;
+                    rps = "ok";
+                }
             }else{
                 rps = "Error en la respuesta";  
             }
