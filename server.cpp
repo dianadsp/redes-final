@@ -1,5 +1,22 @@
-  //g++ -std=c++11 -pthread -o server server.cpp
- 
+/***
+    Author(s): Carlos Chicata, Diana Patiño, Melissa Zevallos.
+    Last Update: 29/oct/2019
+
+    Title:
+        Server module
+    
+    Purpose:
+        - To be the master server in distributed DB of graph.
+    
+    Funcionality:
+        - manage connections of clients.
+
+    HOW TO WORK:
+        - add the Port and fun it!
+    
+    HOW TO COMPILE:
+        - g++ server.cpp -o server -pthread -std=c++11
+***/ 
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -13,6 +30,7 @@
 #include <set>
 #include <iostream>
 
+#include "protocol.cpp"
 #include "utility_connection.cpp"
 
 #define MAX_SIZE_BUFFER 10000
@@ -38,10 +56,13 @@ class Connection{
         int connection_fd;
         string nickname = "";
         bool is_actived = true;
+        Protocol* protocolo;
     public:
         Connection(int fd): connection_fd(fd){
+            this->protocolo = new Protocol(fd, false);
             slaves.push_back(this);
         }
+
 };
 
 /***
@@ -81,7 +102,7 @@ int start_server(int port, string ip){
 /////////// main function
 int main(int argc, const char** argv){
 	int port = 0;
-    cout << "Pasar datos necesario del servidor maestro.\nPasar el IP:" << endl;
+    cout << "Pasar datos necesario del servidor maestro." << endl;
 	string ip = "";
 	cout << "Pasar el puerto:" << endl;
 	cin >> port;

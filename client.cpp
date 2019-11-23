@@ -1,6 +1,19 @@
- 
-//g++ -o client client.cpp
- 
+/**
+    Author: Carlos Chicata, Diana Patiño, Melisa Zevallos
+    Last update: 29/oct/2019
+
+    Title:
+        Client module
+
+    Purpose:
+        - interaction between other clients in server:
+    
+    HOW TO WORK:
+        - add the IP and Port and fun it!
+    
+    HOW TO COMPILE:
+        - g++ client.cpp -o client -pthread -std=c++11
+**/
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -14,6 +27,7 @@
 #include <vector>
 
 #include "utility_connection.cpp"
+#include "protocol.cpp"
 
 #define MAX_SIZE_BUFFER 10000
 
@@ -29,9 +43,11 @@ class Client {
         int connect_fd;
         string buffer;
         bool is_connected = true;
+        Protocol* protocolo;
     public:
         ////// constructor
         Client(int fd):connect_fd(fd){
+            this->protocolo = new Protocol(fd, true);
             instance = this;
         }
 };
