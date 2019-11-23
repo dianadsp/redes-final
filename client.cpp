@@ -26,7 +26,7 @@
 #include <thread>
 #include <vector>
 
-#include "utility_connection.cpp"
+#include "utility_connection.h"
 #include "protocol.cpp"
 
 #define MAX_SIZE_BUFFER 10000

@@ -31,7 +31,7 @@
 #include <iostream>
 
 #include "protocol.cpp"
-#include "utility_connection.cpp"
+#include "utility_connection.h"
 
 #define MAX_SIZE_BUFFER 10000
 

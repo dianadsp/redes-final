@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "serializer.cpp"
+#include "utility_connection.h"
 
 using namespace std;
 
@@ -16,14 +17,23 @@ class Protocol{
             this->socket_fd = fd;
             this->slave = is_slave;
         }
+        /***
+         * interface: to take action based in type of part in architecture
+         * ***/
+        string take_action(string msg){
+            if(this->slave){
+                return this->slave_action(msg);
+            }
+            return this->master_action(msg);
+        }
         /**
-         * action to take in master protocol
+         * interface: action to take in master protocol
          ***/
         string master_action(string msg){
 
         }
         /**
-         * action to take in slave protocol
+         * interface: action to take in slave protocol
          * **/
         string slave_action(string msg){
 
