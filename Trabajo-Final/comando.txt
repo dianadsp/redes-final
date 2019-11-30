@@ -1,0 +1,19 @@
+CONSULTAS:
+
+Para insertar nodo y relación:
+I N A 3
+I R A Z
+
+Consultar nodo y relacion específica:
+Q N Nodo
+Q R Nodo
+
+Consulta de nodo con profundidad:
+Q R Nodo Profundidad
+
+Actualizar nodo:
+U N Nodo Value
+
+Eliminar nodo o relacion:
+D N Nodo
+D R Nodo1 Nodo2
